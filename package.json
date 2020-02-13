@@ -1,0 +1,27 @@
+{
+  "name": "charactersearch",
+  "version": "1.0.0",
+  "description": "Home Task 2: \r Create a console application CharacterSearch. The application should be able to do the following: \r 1) Download a Database of characters from the Rick and Morty API.\r 2) Perform search of a character based on the search parameters passed in the command line. List of parameters to be used for search: name, id, status, species, gender. When provided with multiple search parameters the application should print out all the results that match all the provided search parameters.\r 3) On each search the application should request the entire database of characters, then perform a search in it, and after that it should print out number of matches and the first five results of search in the console and then record all of the results in a json file “results.json”.\r 4) If no characters matching the search parameters are found the application should print out an error message.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Staller92/characterSearch.git"
+  },
+  "author": "Dzmitry Likhtarovich",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Staller92/characterSearch/issues"
+  },
+  "homepage": "https://github.com/Staller92/characterSearch#readme",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "yargs": "^15.1.0"
+  },
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "eslint-config-google": "^0.14.0"
+  }
+}
