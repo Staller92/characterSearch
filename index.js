@@ -13,6 +13,11 @@ yargs.command({
       demandOption: false,
       description: 'name',
     },
+    id: {
+      type: 'number',
+      demandOption: false,
+      description: 'id',
+    },
     status: {
       type: 'string',
       demandOption: false,
@@ -30,8 +35,7 @@ yargs.command({
     },
   },
   handler(args) {
-    console.log(args);
-    search(args.name, args.species, args.status, args.gender );
+    search(args);
   },
 }).parse();
 
@@ -39,15 +43,36 @@ yargs.command({
 async function getCharacters(pageNumber) {
   const results = await axios({
     method: 'get',
-    url: `https://rickandmortyapi.com/api/location?page=${pageNumber}`,
+    url: `https://rickandmortyapi.com/api/character/?page=${pageNumber}`,
   });
+  console.log(results);
   return results;
 };
 
 
-async function getAllCharacters() {
+
+function getAllCharacters() {
+  let bufferData = [];
+  let promises = [];
+  for (let i = 0; i <= 2; i++) {
+    promises.push(getCharacters(i));
+  };
+
+Promise.all(promises).then((content) => {
+   bufferData.push(...content); 
+  // or use flatMap()
+  writeCharacters(content);
+}).catch(err => {
+  console.log(err);
+});
+console.log(bufferData);
+return bufferData;
+}
+
+
+/* async function getAllCharacters() {
   const arr = [];
-  for (let i = 1; i < 5; i++) {
+  for (let i = 1; i < 3; i++) {
     const content = await getCharacters(i);
     const characters = content.data.results;
     arr.push(...characters);
@@ -55,23 +80,30 @@ async function getAllCharacters() {
     //  arr.push(character);
     // });
   };
-  writeCharacters(arr);
   return arr;
-};
+}; */
 
 
 function writeCharacters(content) {
   fs.writeFileSync(notePath, JSON.stringify(content));
 };
 
+async function search(args) {
+  for (var key in args) {
+    if (key === '_' || key === '$0') {
+      delete args[key];
+    }
+  };
 
-
-async function search(name, species, status) {
-  console.log(name);
-  console.log(species);
-  console.log(status);
-  const characters = await getAllCharacters();
-  const filtered = characters.filter(character => character.name === name && character.species === species && character.status === status);
-  console.log(filtered);
+  let characters = await getAllCharacters();
+  for (var key in args) {
+    characters = characters.filter(character => character[key] === args[key]);
+  }
+  if (characters.length) {
+    console.log(`There are ${characters.length} matches`);
+  } else {
+    console.log('No characters matches!');
+  }
+ // writeCharacters(characters);
 };
 
