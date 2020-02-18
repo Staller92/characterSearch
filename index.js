@@ -1,3 +1,4 @@
+/* eslint-disable require-jsdoc */
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
@@ -37,73 +38,60 @@ yargs.command({
   handler(args) {
     search(args);
   },
-}).parse();
-
+})
+    .demandCommand(1, 'You need at least one command before moving on')
+    .argv;
 
 async function getCharacters(pageNumber) {
-  const results = await axios({
+  const content = await axios({
     method: 'get',
     url: `https://rickandmortyapi.com/api/character/?page=${pageNumber}`,
   });
-  console.log(results);
-  return results;
+  return content.data.results;
 };
 
+async function getPagesNumber() {
+  const content = await axios({
+    method: 'get',
+    url: `https://rickandmortyapi.com/api/character/`,
+  });
+  return content.data.info.pages;
+};
 
-
-function getAllCharacters() {
-  let bufferData = [];
-  let promises = [];
-  for (let i = 0; i <= 2; i++) {
+async function getAllCharacters() {
+  const pagesNumber = await getPagesNumber();
+  const promises = [];
+  for (let i = 1; i <= pagesNumber; i++) {
     promises.push(getCharacters(i));
   };
-
-Promise.all(promises).then((content) => {
-   bufferData.push(...content); 
-  // or use flatMap()
-  writeCharacters(content);
-}).catch(err => {
-  console.log(err);
-});
-console.log(bufferData);
-return bufferData;
-}
-
-
-/* async function getAllCharacters() {
-  const arr = [];
-  for (let i = 1; i < 3; i++) {
-    const content = await getCharacters(i);
-    const characters = content.data.results;
-    arr.push(...characters);
-    //characters.forEach(character => {
-    //  arr.push(character);
-    // });
-  };
-  return arr;
-}; */
-
+  const data = await Promise.all(promises).then((data) => data.flat());
+  console.log(`There are ${data.length} results`);
+  return data;
+};
 
 function writeCharacters(content) {
   fs.writeFileSync(notePath, JSON.stringify(content));
 };
 
 async function search(args) {
-  for (var key in args) {
-    if (key === '_' || key === '$0') {
-      delete args[key];
-    }
-  };
-
   let characters = await getAllCharacters();
-  for (var key in args) {
-    characters = characters.filter(character => character[key] === args[key]);
+  for (const key in args) {
+    if (key !== '_' && key !== '$0') {
+      characters = characters.filter(
+          (character) => character[key] === args[key]);
+    }
   }
-  if (characters.length) {
-    console.log(`There are ${characters.length} matches`);
+  showMatches(characters);
+  writeCharacters(characters);
+};
+
+function showMatches(data) {
+  if (data.length) {
+    console.log(`There are ${data.length} matches`);
+    for (let i = 0; i < 5; i++) {
+      data[i] && console.log(data[i]);
+    }
   } else {
     console.log('No characters matches!');
   }
- // writeCharacters(characters);
 };
-
